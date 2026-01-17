@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attack Chain Browser</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/cytoscape@3.26.0/dist/cytoscape.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cytoscape-dagre@2.5.0/cytoscape-dagre.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Attack Chain Browser</h1>
+            <nav>
+                <button onclick="showTab('visualization')">Visualization</button>
+                <button onclick="showTab('cve-chains')">CVE Chains</button>
+                <button onclick="showTab('techniques')">Techniques</button>
+                <button onclick="showTab('multi-stage')">Multi-Stage</button>
+                <button onclick="showTab('ml-suggestions')">ML Suggestions</button>
+            </nav>
+        </header>
+        
+        <main>
+            <div id="visualization" class="tab-content">
+                <h2>Attack Chain Visualization</h2>
+                <div id="chain-visualization" style="width: 100%; height: 600px; border: 1px solid #333; background: #1e1e1e;"></div>
+            </div>
+            
+            <div id="cve-chains" class="tab-content" style="display:none">
+                <h2>CVE-Based Attack Chains</h2>
+                <div id="cve-chains-list"></div>
+            </div>
+            
+            <div id="techniques" class="tab-content" style="display:none">
+                <h2>Discovered Techniques</h2>
+                <div id="techniques-list"></div>
+            </div>
+            
+            <div id="multi-stage" class="tab-content" style="display:none">
+                <h2>Multi-Stage Attack Chains</h2>
+                <div id="multi-stage-list"></div>
+            </div>
+            
+            <div id="ml-suggestions" class="tab-content" style="display:none">
+                <h2>ML-Suggested Chains</h2>
+                <div id="ml-suggestions-list"></div>
+            </div>
+        </main>
+        
+        <div id="chain-details-modal" class="modal" style="display:none">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <div id="chain-details"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="/static/js/chain_visualizer.js"></script>
+    <script>
+        // Load chains on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            loadChains();
+        });
+        
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.style.display = 'none';
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).style.display = 'block';
+        }
+        
+        function loadChains() {
+            fetch('/api/chains')
+                .then(response => response.json())
+                .then(data => {
+                    displayCVEChains(data.cve_chains);
+                    displayTechniques(data.techniques);
+                    displayMultiStageChains(data.multi_stage_chains);
+                    displayMLSuggestions(data.ml_suggestions);
+                })
+                .catch(error => {
+                    console.error('Error loading chains:', error);
+                });
+        }
+        
+        function displayCVEChains(chains) {
+            const container = document.getElementById('cve-chains-list');
+            container.innerHTML = chains.map(chain => `
+                <div class="chain-card" onclick="showChainDetails('${chain.chain_id}')">
+                    <h3>${chain.name}</h3>
+                    <p>${chain.description}</p>
+                    <div class="chain-meta">
+                        <span>Success: ${(chain.success_probability * 100).toFixed(1)}%</span>
+                        <span>CVEs: ${chain.cves.join(', ')}</span>
+                        <span>Source: ${chain.source_tool}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function displayTechniques(techniques) {
+            const container = document.getElementById('techniques-list');
+            container.innerHTML = techniques.map(tech => `
+                <div class="technique-card">
+                    <h3>${tech.name}</h3>
+                    <p>${tech.description}</p>
+                    <div class="tech-meta">
+                        <span>Tool: ${tech.tool_source}</span>
+                        <span>MITRE: ${tech.mitre_id || 'N/A'}</span>
+                        <span>Confidence: ${(tech.confidence * 100).toFixed(1)}%</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function displayMultiStageChains(chains) {
+            const container = document.getElementById('multi-stage-list');
+            container.innerHTML = chains.map(chain => `
+                <div class="chain-card" onclick="showChainDetails('${chain.chain_id}')">
+                    <h3>${chain.name}</h3>
+                    <p>${chain.description}</p>
+                    <div class="chain-meta">
+                        <span>Success: ${(chain.overall_success_probability * 100).toFixed(1)}%</span>
+                        <span>Stages: ${Object.keys(chain.stages).length}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function displayMLSuggestions(chains) {
+            const container = document.getElementById('ml-suggestions-list');
+            if (!chains || chains.length === 0) {
+                container.innerHTML = '<p>No ML suggestions available</p>';
+                return;
+            }
+            container.innerHTML = chains.map(chain => `
+                <div class="chain-card" onclick="showChainDetails('${chain.chain_id}')">
+                    <h3>${chain.name}</h3>
+                    <p>${chain.description}</p>
+                    <div class="chain-meta">
+                        <span>Success: ${(chain.success_probability * 100).toFixed(1)}%</span>
+                        <span>Confidence: ${(chain.confidence * 100).toFixed(1)}%</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function showChainDetails(chainId) {
+            fetch(`/api/chain/${chainId}`)
+                .then(response => response.json())
+                .then(chain => {
+                    const modal = document.getElementById('chain-details-modal');
+                    const details = document.getElementById('chain-details');
+                    details.innerHTML = `
+                        <h2>${chain.name}</h2>
+                        <p>${chain.description}</p>
+                        <h3>Steps:</h3>
+                        <ul>
+                            ${chain.steps.map(step => `<li>${step.description || step.technique || step}</li>`).join('')}
+                        </ul>
+                    `;
+                    modal.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error loading chain details:', error);
+                });
+        }
+        
+        function closeModal() {
+            document.getElementById('chain-details-modal').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

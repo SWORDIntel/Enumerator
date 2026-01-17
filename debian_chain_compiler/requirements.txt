@@ -1,0 +1,18 @@
+# Requirements for Debian Chain Compiler
+# Install with: pip3 install -r requirements.txt
+
+# Core dependencies
+networkx>=3.1
+pyyaml>=6.0
+
+# Parser module dependencies (if parser directory available)
+requests>=2.31.0
+graphviz>=0.20.1
+jinja2>=3.1.2
+pandas>=2.0.0
+matplotlib>=3.7.0
+beautifulsoup4>=4.12.0
+
+# Optional ML dependencies
+numpy>=1.24.0
+scikit-learn>=1.3.0
