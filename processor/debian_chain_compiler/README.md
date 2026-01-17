@@ -159,7 +159,7 @@ Both upload enumeration data to Pastebin.
 ### Step 2: Download and Parse (Debian)
 
 ```bash
-cd ../parser
+cd parser
 python3 parser.py https://pastebin.com/XXXXX --password ducknipples
 ```
 

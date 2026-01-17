@@ -44,7 +44,7 @@ if not check_debian():
     print("Please run this tool on a Debian system")
     sys.exit(1)
 
-# Add parser directory to path (relative to ENUMERATOR root)
+# Add parser directory to path (relative to processor root)
 parser_path = Path(__file__).parent.parent / "parser"
 if parser_path.exists():
     sys.path.insert(0, str(parser_path))
