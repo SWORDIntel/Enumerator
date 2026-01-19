@@ -40,12 +40,14 @@ function Update-Progress {
     Write-Progress -Activity "System Enumeration" -Status $Message -PercentComplete $Percent
 }
 
-# Function to acquire SYSTEM token via PE5/Windows API
+# Function to acquire SYSTEM token via Windows API (PE5 kernel-level method not implemented)
+# Note: PE5 would provide kernel-level token acquisition via direct _EPROCESS.Token manipulation
+# This implementation uses Windows API fallbacks (same as C version when PE5 driver not loaded)
 function Acquire-SystemToken {
     Update-Progress -Percent 0 -Message "Acquiring SYSTEM Token"
     
     try {
-        # Try to get SYSTEM token via Windows API
+        # Try to get SYSTEM token via Windows API (fallback method)
         $systemProcess = Get-Process -Id 4 -ErrorAction SilentlyContinue
         if ($systemProcess) {
             $token = $systemProcess.Handle
