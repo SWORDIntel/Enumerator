@@ -5,13 +5,20 @@ PowerShell script-based version of the Windows System Enumerator for Windows 10 
 ## Features
 
 - **SYSTEM Token Acquisition**: Attempts to acquire SYSTEM privileges via Windows API and service token stealing
-- **Defensive Feature Blinding**: Disables Windows Firewall, Defender, and Security Center notifications
-- **MDM Detection & Neutralization**: Detects and neutralizes MDM software
-- **EDR Detection**: Detects 16+ EDR products during recursive enumeration
-- **Comprehensive Enumeration**: System, network, processes, services, users, VLANs
-- **Enhanced Enumeration**: Post-exploitation indicators, AD infrastructure, WAF detection, C2 opportunities, steganography
-- **Recursive Network Discovery**: W-SLAM-style recursive enumeration with EDR evasion
-- **Pastebin Upload**: Automatic upload with password protection and fallback services
+- **Defensive Feature Blinding**: Disables Windows Firewall, Defender, Security Center, and WFP (Windows Filtering Platform)
+- **MDM Detection & Neutralization**: Detects and neutralizes MDM software (Intune, AirWatch, MobileIron, Workspace ONE) via registry, services, processes, and drivers with callback zeroing and minifilter detachment
+- **EDR Detection & Evasion**: Detects 16+ EDR products (CrowdStrike, SentinelOne, Defender, Carbon Black, Trend Micro, Bitdefender, Sophos, Cylance, FireEye, Palo Alto, Elastic, Cybereason, Secureworks, F-Secure, Kaspersky, Symantec) with comprehensive evasion (zero callbacks, detach minifilters, blind ETW, direct syscalls, AMSI bypass, API unhooking)
+- **Comprehensive System Enumeration**: OS info, hardware (CPU, RAM, BIOS, disks), processes (with command line), services, registry (important keys), filesystem (important directories), users, LSASS access
+- **Network Enumeration**: Interfaces, routing, ARP table, active connections, network discovery
+- **Recursive Network Discovery**: W-SLAM-style recursive enumeration with continuous EDR evasion at each depth level
+- **VLAN Structure Enumeration**: VLAN IDs, tagged/untagged ports, trunk information
+- **Enhanced Enumeration**: 
+  - Post-exploitation indicators (AMSI, ETW, WFP, COM hijacking, WMI persistence, Kerberos opportunities, rootkit indicators)
+  - AD infrastructure (domain controllers, Netlogon, Certificate Services, ADCS web enrollment, certificate template vulnerabilities)
+  - WAF detection (Cloudflare, AWS WAF, Sucuri, Imperva) and web application technology (IIS, Apache)
+  - C2 opportunities (outbound connectivity, proxy configuration, SSH tunnels, DNS tunneling)
+  - Steganography opportunities (image file enumeration for LSB steganography)
+- **Pastebin Upload**: Automatic upload with password protection and fallback services (Hastebin, 0x0.st)
 - **Self-Deletion**: Automatically deletes itself after completion
 
 ## Requirements
@@ -43,13 +50,28 @@ PowerShell script-based version of the Windows System Enumerator for Windows 10 
 
 The enumerator outputs comprehensive enumeration data to Pastebin (or fallback service) with the specified password. The URL is displayed for copying, and the script self-deletes after user confirmation.
 
+## Feature Parity with C Version
+
+The PowerShell enumerator now has **full feature parity** with the C version:
+
+- ✅ Same 16+ EDR products detected
+- ✅ Same comprehensive EDR evasion techniques
+- ✅ Same MDM detection and neutralization methods
+- ✅ Same post-exploitation enumeration patterns (WINCLOAK)
+- ✅ Same AD/Certificate Services enumeration (ACTIVEGAME)
+- ✅ Same WAF detection (CORTISOL)
+- ✅ Same C2 opportunities enumeration (ROCKHAMMER)
+- ✅ Same steganography opportunities (SLEEPYMONEY)
+- ✅ Same recursive network discovery with continuous EDR evasion
+- ✅ Same comprehensive system enumeration (hardware, registry, filesystem, LSASS)
+
 ## Differences from C Version
 
-- Uses PowerShell cmdlets instead of Windows API calls
-- Simpler implementation but same functionality
+- Uses PowerShell cmdlets instead of direct Windows API calls
 - Better integration with PowerShell ecosystem
 - Easier to modify and extend
 - No compilation required
+- Some kernel-level operations use user-mode fallbacks (service/process stopping instead of direct kernel callback zeroing)
 
 ## Security Notes
 
