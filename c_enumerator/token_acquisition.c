@@ -1,3 +1,6 @@
+// Windows 7 compatibility
+#include "win7_compat.h"
+
 #include "token_acquisition.h"
 #include <stdio.h>
 #include <stdlib.h>

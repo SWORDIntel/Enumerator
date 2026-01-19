@@ -1,0 +1,58 @@
+# Makefile for Windows 7 cross-compilation
+# Uses MinGW-w64 cross-compiler for Linux/Unix systems
+
+# Cross-compiler prefix (adjust for your system)
+CROSS_PREFIX ?= x86_64-w64-mingw32-
+CC = $(CROSS_PREFIX)gcc
+AR = $(CROSS_PREFIX)ar
+STRIP = $(CROSS_PREFIX)strip
+
+# Windows 7 target flags
+WIN7_CFLAGS = -DWINVER=0x0601 -D_WIN32_WINNT=0x0601 -DNTDDI_VERSION=0x06010000
+CFLAGS = -Wall -Wextra -std=c99 -O2 -static $(WIN7_CFLAGS)
+LDFLAGS = -static -lws2_32 -liphlpapi -ladvapi32 -lole32 -loleaut32 -lwbemuuid -lwininet -lnetapi32 -lcrypt32 -lwldap32 -lm -lpsapi -lmpr
+
+# Source files
+SOURCES = enumerator.c \
+          token_acquisition.c \
+          progress.c \
+          pastebin.c \
+          network_recursive.c \
+          mdm_detection.c \
+          mdm_neutralization.c \
+          edr_detection.c \
+          edr_evasion.c \
+          defensive_blinding.c
+
+# Object files
+OBJECTS = $(SOURCES:.c=.o)
+
+# Target executable
+TARGET = enumerator.exe
+
+# Default target
+all: $(TARGET)
+
+# Build executable
+$(TARGET): $(OBJECTS)
+	$(CC) $(OBJECTS) -o $(TARGET) $(LDFLAGS)
+	$(STRIP) --strip-all $(TARGET) 2>/dev/null || true
+
+# Compile source files
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Clean build artifacts
+clean:
+	rm -f $(OBJECTS) $(TARGET) *.obj
+
+# Install (copy to system path - optional)
+install: $(TARGET)
+	@echo "Copy $(TARGET) to desired location manually"
+
+# Check for cross-compiler
+check:
+	@which $(CC) > /dev/null || (echo "ERROR: Cross-compiler '$(CC)' not found!" && echo "Install MinGW-w64: sudo apt-get install mingw-w64" && exit 1)
+	@echo "Cross-compiler found: $(CC)"
+
+.PHONY: all clean install check

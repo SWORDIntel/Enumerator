@@ -1,3 +1,6 @@
+// Windows 7 compatibility
+#include "win7_compat.h"
+
 #include "mdm_neutralization.h"
 #include "enumerator.h"
 #include <stdio.h>

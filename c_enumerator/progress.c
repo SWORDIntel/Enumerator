@@ -1,3 +1,6 @@
+// Windows 7 compatibility
+#include "win7_compat.h"
+
 #include "progress.h"
 #include <stdio.h>
 #include <string.h>

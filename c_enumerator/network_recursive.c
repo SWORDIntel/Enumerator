@@ -1,3 +1,6 @@
+// Windows 7 compatibility
+#include "win7_compat.h"
+
 #include "network_recursive.h"
 #include "enumerator.h"
 #include "edr_detection.h"
